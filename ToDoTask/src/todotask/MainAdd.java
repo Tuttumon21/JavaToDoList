@@ -4,6 +4,12 @@
  */
 package todotask;
 
+import com.toedter.calendar.JDateChooser;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Rakes
@@ -13,9 +19,78 @@ public class MainAdd extends javax.swing.JFrame {
     /**
      * Creates new form MainAdd
      */
+    public static int num;
+    public static String lValue=null;
+    public static String t=null;
+    public static String d=null;
     public MainAdd() {
         initComponents();
+        getTableData();
+        completedTask();
     }
+    
+    
+        public void getTableData() {
+         SimpleDateFormat dcn = new SimpleDateFormat("dd-MM-yyyy");
+         
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/todo", "root", "");
+            PreparedStatement st = con.prepareStatement("Select * from todo where user_id=? and complete=0");
+
+            Login l = new Login();
+            int user_id = l.user;
+            st.setInt(1, user_id);
+
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {               
+                
+                String id = String.valueOf(rs.getInt("id"));
+                String task = rs.getString("task");
+                String cdate = dcn.format(rs.getDate("date"));                
+                String end_date = dcn.format(rs.getDate("end_date"));               
+
+                String tbData[] = {id, cdate, task, end_date};
+
+                DefaultTableModel tmodel = (DefaultTableModel) jTable1.getModel();
+                tmodel.addRow(tbData);
+            }
+            
+
+            con.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+        
+    public void completedTask(){
+        DefaultListModel listmodel = new DefaultListModel();
+         try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/todo", "root", "");
+            PreparedStatement st = con.prepareStatement("Select * from todo where user_id=? and complete=1");
+
+            Login l = new Login();
+            int user_id = l.user;
+            st.setInt(1, user_id);
+
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {             
+               
+                String task = rs.getString("task");
+               
+               jList1.setModel(listmodel);
+               listmodel.addElement(task);
+                
+            }            
+
+            con.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -34,6 +109,7 @@ public class MainAdd extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
+        jDateChooser1 = new com.toedter.calendar.JDateChooser();
         jPanel2 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
@@ -41,21 +117,33 @@ public class MainAdd extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jButton5 = new javax.swing.JButton();
+        jButton7 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
         jButton4 = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
         jButton6 = new javax.swing.JButton();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jTabbedPane1.setBackground(new java.awt.Color(255, 255, 255));
+        jTabbedPane1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTabbedPane1MouseClicked(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
         jButton1.setFont(new java.awt.Font("Serif", 1, 14)); // NOI18N
         jButton1.setText("Logout");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jLabel4.setFont(new java.awt.Font("Serif", 3, 18)); // NOI18N
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -70,6 +158,11 @@ public class MainAdd extends javax.swing.JFrame {
 
         jButton2.setFont(new java.awt.Font("Serif", 1, 14)); // NOI18N
         jButton2.setText("Add");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel2.setText("Type your Task  here");
@@ -93,10 +186,12 @@ public class MainAdd extends javax.swing.JFrame {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(237, 237, 237)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addGap(100, 100, 100)
                                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addGap(0, 257, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -113,9 +208,11 @@ public class MainAdd extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(53, 53, 53)
+                .addGap(43, 43, 43)
+                .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(40, 40, 40)
                 .addComponent(jButton2)
-                .addContainerGap(245, Short.MAX_VALUE))
+                .addContainerGap(193, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("ADD", jPanel1);
@@ -128,6 +225,11 @@ public class MainAdd extends javax.swing.JFrame {
 
         jButton3.setFont(new java.awt.Font("Serif", 1, 14)); // NOI18N
         jButton3.setText("Logout");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         jLabel3.setFont(new java.awt.Font("Serif", 1, 24)); // NOI18N
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -136,10 +238,7 @@ public class MainAdd extends javax.swing.JFrame {
         jTable1.setFont(new java.awt.Font("Serif", 1, 12)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
                 "NO", "Created Date", "Your Task", "End Date"
@@ -153,10 +252,28 @@ public class MainAdd extends javax.swing.JFrame {
                 return types [columnIndex];
             }
         });
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTable1);
 
         jButton5.setFont(new java.awt.Font("Serif", 1, 14)); // NOI18N
         jButton5.setText("Task completed");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        jButton7.setFont(new java.awt.Font("Serif", 1, 14)); // NOI18N
+        jButton7.setText("Update Task");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -171,7 +288,11 @@ public class MainAdd extends javax.swing.JFrame {
                         .addComponent(jButton3))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(jPanel2Layout.createSequentialGroup()
                                     .addGap(323, 323, 323)
@@ -194,7 +315,9 @@ public class MainAdd extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton5)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton5)
+                    .addComponent(jButton7))
                 .addContainerGap(89, Short.MAX_VALUE))
         );
 
@@ -208,6 +331,11 @@ public class MainAdd extends javax.swing.JFrame {
 
         jButton4.setFont(new java.awt.Font("Serif", 1, 14)); // NOI18N
         jButton4.setText("Logout");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
 
         jLabel7.setFont(new java.awt.Font("Serif", 1, 24)); // NOI18N
         jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -220,13 +348,13 @@ public class MainAdd extends javax.swing.JFrame {
             }
         });
 
-        jCheckBox1.setSelected(true);
-        jCheckBox1.setText("jCheckBox1");
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
+        jList1.setBackground(new java.awt.Color(255, 255, 255));
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jList1MouseClicked(evt);
             }
         });
+        jScrollPane2.setViewportView(jList1);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -240,13 +368,18 @@ public class MainAdd extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton4))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(298, 298, 298)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jButton6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                            .addComponent(jCheckBox1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(0, 296, Short.MAX_VALUE)))
+                        .addGap(282, 282, 282)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 226, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGap(16, 16, 16)
+                                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 286, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(292, 292, 292)
+                .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -257,11 +390,11 @@ public class MainAdd extends javax.swing.JFrame {
                     .addComponent(jButton4))
                 .addGap(18, 18, 18)
                 .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jCheckBox1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 226, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(38, 38, 38)
                 .addComponent(jButton6)
-                .addGap(170, 170, 170))
+                .addContainerGap(86, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("COMPLETED", jPanel3);
@@ -281,12 +414,197 @@ public class MainAdd extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        // TODO add your handling code here:
+        
+         DefaultListModel listmodel = new DefaultListModel();
+         
+        if(lValue==null){
+            JOptionPane.showMessageDialog(jPanel1, "Select a task to delete.");
+        }
+        else{
+             try {
+                Class.forName("com.mysql.jdbc.Driver");
+                Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/todo", "root", "");
+                PreparedStatement stm = con.prepareStatement("DELETE FROM todo where task = ? and complete=1");
+                stm.setString(1, lValue);
+                boolean result = stm.execute();
+               
+                JOptionPane.showMessageDialog(jPanel1, "Task Deleted.");
+                completedTask();
+               
+                 } catch (Exception e) {
+                    System.out.println(e);
+                 }
+        }
     }//GEN-LAST:event_jButton6ActionPerformed
 
-    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox1ActionPerformed
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+       new Login().setVisible(true);
+       dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+       
+         Login l = new Login();
+         int userid = l.user;
+         String task = jTextField1.getText();
+         SimpleDateFormat dcn = new SimpleDateFormat("yyyy-MM-dd");
+         String end_date = dcn.format(jDateChooser1.getDate());
+        
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/todo","root","");
+            PreparedStatement st = con.prepareStatement("INSERT INTO todo(task,date,user_id,end_date) VALUES(?,?,?,?)");
+
+            st.setString(1, task);
+            st.setDate(2, java.sql.Date.valueOf(java.time.LocalDate.now()));
+            st.setInt(3, userid);
+            st.setString(4, end_date);
+
+            int rs = st.executeUpdate();
+
+            if (rs==1) {
+                new MainAdd().setVisible(true);
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(jPanel1, "Task not added");
+            }
+
+            con.close();
+
+        }catch(Exception e){ System.out.println(e);}
+        
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+         new Login().setVisible(true);
+         dispose();
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+         new Login().setVisible(true);
+         dispose();
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+            JTable source = (JTable)evt.getSource();
+            int row = source.rowAtPoint( evt.getPoint() );
+            int column = 0;
+            String s=source.getModel().getValueAt(row, column)+"";
+            t=source.getModel().getValueAt(row, 2)+"";
+            d=source.getModel().getValueAt(row, 3)+"";
+            num = Integer.parseInt(s);
+    }//GEN-LAST:event_jTable1MouseClicked
+
+    private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseClicked
+       lValue = (String)jList1.getModel().getElementAt(jList1.locationToIndex(evt.getPoint()));
+        
+    }//GEN-LAST:event_jList1MouseClicked
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        
+        if(num>0){
+            try
+        {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/todo", "root", "");
+            PreparedStatement st = con.prepareStatement(
+                    "update todo set complete=1 where id=?");           
+           
+            
+            st.setInt(1,num);
+ 
+
+            int rs = st.executeUpdate();
+
+            if (rs == 1)
+            {
+                JOptionPane.showMessageDialog(jPanel1, "Task completed");
+                DefaultTableModel tmodel = (DefaultTableModel) jTable1.getModel();
+                tmodel.setRowCount(0);
+                getTableData();
+               
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(jPanel1, "Task not completed");
+                dispose();
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println(e);
+        }
+        }else{
+            JOptionPane.showMessageDialog(jPanel1, "Select task to complete!");
+        }
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jTabbedPane1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTabbedPane1MouseClicked
+        int selectedIndex = jTabbedPane1.getSelectedIndex();
+        if(selectedIndex==2){
+            completedTask();
+        }
+    }//GEN-LAST:event_jTabbedPane1MouseClicked
+
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+       SimpleDateFormat dcn = new SimpleDateFormat("yyyy-MM-dd");
+        
+        if(num>0){
+            
+            JTextField field1 = new JTextField(t);
+            JDateChooser field2 = new JDateChooser();
+            
+            Object[] message = {
+                "Task:", field1,
+                "End Date:", field2,
+               
+            };
+            
+            int option = JOptionPane.showConfirmDialog(jPanel1, message, "Update Task", JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.OK_OPTION)
+            {
+                String value1 = field1.getText();
+                String value2 = dcn.format(field2.getDate());
+          
+        try
+        {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/todo", "root", "");
+            PreparedStatement st = con.prepareStatement(
+                    "update todo set task=?,end_date=? where id=?");           
+           
+            
+            st.setString(1,value1);
+            st.setString(2,value2);
+            st.setInt(3,num);
+
+            int rs = st.executeUpdate();
+
+            if (rs == 1)
+            {
+                JOptionPane.showMessageDialog(jPanel1, "Task updated");
+                DefaultTableModel tmodel = (DefaultTableModel) jTable1.getModel();
+                tmodel.setRowCount(0);
+                getTableData();
+               
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(jPanel1, "Task not updated");
+                dispose();
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println(e);
+        }
+            }
+        }else{
+            JOptionPane.showMessageDialog(jPanel1, "Select task to complete!");
+        }
+    }//GEN-LAST:event_jButton7ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -330,7 +648,8 @@ public class MainAdd extends javax.swing.JFrame {
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
-    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JButton jButton7;
+    private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -338,10 +657,12 @@ public class MainAdd extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
